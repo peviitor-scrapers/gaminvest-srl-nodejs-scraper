@@ -10,11 +10,11 @@
 | Location | JUD. BIHOR, MUN. ORADEA, STR. ONEŞTILOR, NR.29, AP. SPAȚIU COMERCIAL 2-6, SC.A, ET.PARTER |
 | Website | [https://www.gaminvest.ro](https://www.gaminvest.ro) |
 | Careers | [https://www.gaminvest.ro/cariere.html](https://www.gaminvest.ro/cariere.html) |
-| Last Scraped | 2026-10-14 |
+| Last Scraped | 2026-10-15 |
 
 ## Current Job Listings (5)
 
-_Generated: 2026-10-14T11:01:42.994Z_
+_Generated: 2026-10-15T10:44:44.162Z_
 
 ### Broker imobiliar in Oradea
 
