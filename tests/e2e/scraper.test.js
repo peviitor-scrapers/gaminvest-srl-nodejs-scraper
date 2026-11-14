@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fetch from 'node-fetch';
+import companyConfig from '../../config/company.js';
 
 jest.retryTimes(2, { logErrorsBeforeRetry: true }); // live third-party ANAF/search calls are occasionally slow in CI
 
@@ -20,7 +21,7 @@ function itIfSolr(name, fn, timeout) {
 }
 
 const TEST_CIF = '21913994';
-const CAREERS_URL = 'https://www.gaminvest.ro/cariere.html';
+const CAREERS_URL = companyConfig.careerUrl;
 
 describe('E2E: Full Scraping Pipeline', () => {
   let htmlData;
@@ -42,17 +43,10 @@ describe('E2E: Full Scraping Pipeline', () => {
       expect(htmlData.length).toBeGreaterThan(0);
     }, 10000);
 
-    it('should contain job options if site is accessible', () => {
-      const hasJobs = htmlData && htmlData.includes('id="post"');
-      if (!hasJobs) {
-        console.log('⚠️ No jobs section on page — site may have challenge page');
-        return;
-      }
-      expect(htmlData).toContain('id="post"');
-      expect(htmlData).toContain('<option');
-      const optionMatches = htmlData.match(/<option value="[^"]*">[^<]+<\/option>/g);
-      expect(optionMatches).not.toBeNull();
-      expect(optionMatches.length).toBeGreaterThan(0);
+    it('should contain live job cards', () => {
+      const cardLinks = htmlData.match(/href="[^"]*\/ro\/cariere\/[^"]+"/g);
+      expect(cardLinks).not.toBeNull();
+      expect(cardLinks.length).toBeGreaterThan(0);
     });
   });
 
@@ -67,28 +61,17 @@ describe('E2E: Full Scraping Pipeline', () => {
 
     it('should parse HTML into standardized format', () => {
       expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed.length).toBeGreaterThan(0);
 
-      const hasJobs = htmlData && htmlData.includes('id="post"');
-      if (hasJobs) {
-        expect(parsed.length).toBeGreaterThan(0);
-        const job = parsed[0];
-        expect(job).toHaveProperty('url');
-        expect(job).toHaveProperty('title');
-        expect(job).toHaveProperty('location');
-        expect(typeof job.location).toBe('string');
-        expect(job.location.length).toBeGreaterThan(0);
-      } else {
-        console.log('⚠️ No jobs on page — skipping content assertions');
-      }
+      const job = parsed[0];
+      expect(job).toHaveProperty('url');
+      expect(job).toHaveProperty('title');
+      expect(job).toHaveProperty('location');
+      expect(typeof job.location).toBe('string');
+      expect(job.location.length).toBeGreaterThan(0);
     });
 
     it('should map parsed jobs to job model', () => {
-      const hasJobs = htmlData && htmlData.includes('id="post"');
-      if (!hasJobs) {
-        console.log('⚠️ No jobs on page — skipping mapping test');
-        return;
-      }
-
       const model = index.mapToJobModel(parsed[0], TEST_CIF);
       expect(model).toHaveProperty('url');
       expect(model).toHaveProperty('title');
@@ -99,12 +82,6 @@ describe('E2E: Full Scraping Pipeline', () => {
     });
 
     it('should transform jobs and filter to Romanian locations', () => {
-      const hasJobs = htmlData && htmlData.includes('id="post"');
-      if (!hasJobs) {
-        console.log('⚠️ No jobs on page — skipping transform test');
-        return;
-      }
-
       const jobs = parsed.map(j => index.mapToJobModel(j, TEST_CIF));
       const payload = {
         source: 'gaminvest.ro',
