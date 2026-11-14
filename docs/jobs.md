@@ -14,7 +14,7 @@
 
 ## Current Job Listings (3)
 
-_Generated: 2026-11-14T08:52:31.536Z_
+_Generated: 2026-11-14T12:52:20.869Z_
 
 ### Agent imobiliar (full-time) — Oradea
 
