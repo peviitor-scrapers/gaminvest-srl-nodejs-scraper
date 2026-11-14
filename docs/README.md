@@ -2,7 +2,7 @@
 
 **job_seeker_ro_spider** — scraper pentru job-urile GAMINVEST SRL din România.
 
-Extrage anunțurile de pe [GAMINVEST Careers](https://www.gaminvest.ro/cariere.html) și le publică în [peviitor.ro](https://peviitor.ro) prin API-ul SOLR.
+Extrage anunțurile de pe [GAMINVEST Careers](https://gaminvest.ro/ro/cariere) și le publică în [peviitor.ro](https://peviitor.ro) prin API-ul SOLR.
 
 ## Identificare
 

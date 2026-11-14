@@ -13,7 +13,7 @@
 [![SOLR](https://img.shields.io/website?url=https%3A%2F%2Fsolr.peviitor.ro%2Fsolr%2F&label=solr.peviitor.ro)](https://solr.peviitor.ro/solr/)
 [![GitHub Pages](https://img.shields.io/github/deployments/peviitor-scrapers/gaminvest-srl-nodejs-scraper/github-pages?label=GitHub%20Pages)](https://peviitor-scrapers.github.io/gaminvest-srl-nodejs-scraper/)
 
-**job_seeker_ro_spider** — un scraper pentru job-urile GAMINVEST din România. Extrage anunțurile de pe [GAMINVEST Careers](https://www.gaminvest.ro/cariere.html) și le publică în [peviitor.ro](https://peviitor.ro) prin API-ul SOLR.
+**job_seeker_ro_spider** — un scraper pentru job-urile GAMINVEST din România. Extrage anunțurile de pe [GAMINVEST Careers](https://gaminvest.ro/ro/cariere) și le publică în [peviitor.ro](https://peviitor.ro) prin API-ul SOLR.
 
 > **📐 Template repository.** Acest repo este **derivat** din template-ul [epam-systems-international-srl-nodejs-scraper](https://github.com/peviitor-scrapers/epam-systems-international-srl-nodejs-scraper). Vezi [CONTRIBUTING.md](CONTRIBUTING.md) pentru pașii de derivare.
 

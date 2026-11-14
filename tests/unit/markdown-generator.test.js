@@ -7,7 +7,7 @@ const baseCompany = {
   status: "activ",
   location: ["Oradea"],
   website: ["https://www.gaminvest.ro"],
-  career: ["https://www.gaminvest.ro/cariere.html"],
+  career: ["https://gaminvest.ro/ro/cariere"],
   lastScraped: "2026-06-17"
 };
 
@@ -49,7 +49,7 @@ describe("generateJobsMarkdown", () => {
 
     it("includes career page as markdown link", () => {
       const md = generateJobsMarkdown(baseCompany, []);
-      expect(md).toContain("[https://www.gaminvest.ro/cariere.html](https://www.gaminvest.ro/cariere.html)");
+      expect(md).toContain("[https://gaminvest.ro/ro/cariere](https://gaminvest.ro/ro/cariere)");
     });
 
     it("includes lastScraped date", () => {

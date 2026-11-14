@@ -124,10 +124,10 @@ describe('index.js Component Tests', () => {
       expect(result).toHaveLength(2);
       expect(result[0].title).toBe('Broker imobiliar in Oradea');
       expect(result[0].location).toBe('Oradea');
-      expect(result[0].url).toBe('https://www.gaminvest.ro/cariere.html#post-1');
+      expect(result[0].url).toBe('https://gaminvest.ro/ro/cariere#post-1');
       expect(result[1].title).toBe('Consultant vanzari in Cluj-Napoca');
       expect(result[1].location).toBe('Cluj-Napoca');
-      expect(result[1].url).toBe('https://www.gaminvest.ro/cariere.html#post-2');
+      expect(result[1].url).toBe('https://gaminvest.ro/ro/cariere#post-2');
     });
 
     it('should skip the placeholder option', () => {
@@ -155,6 +155,57 @@ describe('index.js Component Tests', () => {
       const result = index.parseJobsPage(html);
       expect(result).toHaveLength(1);
       expect(result[0].title).toBe('Manager');
+      expect(result[0].location).toBe('Oradea');
+    });
+
+    it('should parse the current job-card markup', () => {
+      const html = `<section>
+        <a href="https://gaminvest.ro/ro/cariere/agent-imobiliar-oradea-full-time">
+          <h3>Agent imobiliar (full-time) — Oradea</h3>
+          <span>Vânzări &amp; consultanță</span><span>Oradea</span><span>Full-time</span><span>Detalii</span>
+        </a>
+        <a href="https://gaminvest.ro/ro/cariere/sales-support-backoffice">
+          <h3>Sales Support BackOffice</h3>
+          <span>Vânzări &amp; consultanță</span><span>Oradea</span><span>Full-time</span><span>Detalii</span>
+        </a>
+      </section>`;
+
+      const result = index.parseJobsPage(html);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toMatchObject({
+        url: 'https://gaminvest.ro/ro/cariere/agent-imobiliar-oradea-full-time',
+        title: 'Agent imobiliar (full-time) — Oradea',
+        location: 'Oradea'
+      });
+      expect(result[1].url).toBe('https://gaminvest.ro/ro/cariere/sales-support-backoffice');
+    });
+
+    it('should ignore navigation links to the careers page', () => {
+      const html = `<nav>
+        <a href="https://gaminvest.ro/ro/cariere">Cariere</a>
+        <a href="https://gaminvest.ro/en/cariere">Careers</a>
+      </nav>
+      <a href="/ro/cariere/contabil-junior-birou-oradea-2">
+        <h3>Contabil junior — birou Oradea</h3>
+        <span>Oradea</span><span>Full-time</span>
+      </a>`;
+
+      const result = index.parseJobsPage(html);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].url).toBe('https://gaminvest.ro/ro/cariere/contabil-junior-birou-oradea-2');
+    });
+
+    it('should default to Oradea when a job card has no location span', () => {
+      const html = `<a href="/ro/cariere/manager">
+        <h3>Manager</h3>
+        <span>Full-time</span><span>Detalii</span>
+      </a>`;
+
+      const result = index.parseJobsPage(html);
+
+      expect(result).toHaveLength(1);
       expect(result[0].location).toBe('Oradea');
     });
   });

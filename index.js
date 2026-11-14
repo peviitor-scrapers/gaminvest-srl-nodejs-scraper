@@ -12,6 +12,21 @@ const CARIERE_URL = companyConfig.careerUrl;
 
 const TIMEOUT = 10000;
 
+const ROMANIAN_CITIES = [
+  'Bucharest', 'București', 'Cluj-Napoca', 'Cluj Napoca',
+  'Timișoara', 'Timisoara', 'Iași', 'Iasi', 'Brașov', 'Brasov',
+  'Constanța', 'Constanta', 'Craiova', 'Bacău', 'Sibiu',
+  'Târgu Mureș', 'Targu Mures', 'Oradea', 'Baia Mare', 'Satu Mare',
+  'Ploiești', 'Ploiesti', 'Pitești', 'Pitesti', 'Arad', 'Galați', 'Galati',
+  'Brăila', 'Braila', 'Drobeta-Turnu Severin', 'Râmnicu Vâlcea', 'Ramnicu Valcea',
+  'Buzău', 'Buzau', 'Botoșani', 'Botosani', 'Zalău', 'Zalau', 'Hunedoara', 'Deva',
+  'Suceava', 'Bistrița', 'Bistrita', 'Tulcea', 'Călărași', 'Calarasi',
+  'Giurgiu', 'Alba Iulia', 'Slatina', 'Piatra Neamț', 'Piatra Neamt', 'Roman',
+  'Dumbrăvița', 'Dumbravita', 'Voluntari', 'Popești-Leordeni', 'Popesti-Leordeni',
+  'Chitila', 'Mogoșoaia', 'Mogosoaia', 'Otopeni'
+];
+const ROMANIAN_CITY_SET = new Set(ROMANIAN_CITIES.map(c => c.toLowerCase()));
+
 let COMPANY_NAME = null;
 
 function extractLocationFromTitle(title) {
@@ -40,15 +55,65 @@ async function fetchJobsPage() {
   return await res.text();
 }
 
+const JOB_CARD_SELECTOR = 'a[href*="/cariere/"]';
+const NON_LOCATION_SPAN = /^(detalii|aplic[ăa]|aplică|view|see more|full[- ]?time|part[- ]?time|remote|hibrid|hybrid|on[- ]?site|contract|internship|proiect)$/i;
+
+function isJobDetailUrl(href) {
+  try {
+    return /\/cariere\/[^/]+\/?$/.test(new URL(href, CARIERE_URL).pathname);
+  } catch {
+    return false;
+  }
+}
+
+function extractLocationFromSpans($, $link) {
+  const spans = $link.find("span").map((_, el) => $(el).text().replace(/\s+/g, " ").trim()).get();
+
+  for (const span of spans) {
+    if (!span || NON_LOCATION_SPAN.test(span)) continue;
+    if (ROMANIAN_CITY_SET.has(span.toLowerCase())) return span;
+  }
+
+  return null;
+}
+
+function parseJobCards($) {
+  const jobs = [];
+  const seen = new Set();
+
+  $(JOB_CARD_SELECTOR).each((_, el) => {
+    const $link = $(el);
+    const href = $link.attr("href") || "";
+    if (!isJobDetailUrl(href)) return;
+
+    const url = new URL(href, CARIERE_URL).href;
+    if (seen.has(url)) return;
+
+    const title = $link.find("h3").first().text().replace(/\s+/g, " ").trim();
+    if (!title) return;
+
+    const location = extractLocationFromSpans($, $link)
+      || extractLocationFromTitle(title)
+      || companyConfig.defaultLocation;
+
+    seen.add(url);
+    jobs.push({ url, title, location });
+  });
+
+  return jobs;
+}
+
 function hasJobsOnPage(html) {
   if (!html || html.trim().length === 0) return false;
   const $ = cheerio.load(html);
-  return $('select#post option').length > 1;
+  return $('a[href*="/cariere/"] h3').length > 0 || $('select#post option').length > 1;
 }
 
 function parseJobsPage(html) {
   const $ = cheerio.load(html);
-  const jobs = [];
+  const jobs = parseJobCards($);
+
+  if (jobs.length > 0) return jobs;
 
   $('select#post option').each((i, el) => {
     const text = $(el).text().trim();
@@ -101,22 +166,6 @@ function mapToJobModel(rawJob, cif, companyName = COMPANY_NAME) {
 }
 
 function transformJobsForSOLR(payload) {
-  const romanianCities = [
-    'Bucharest', 'București', 'Cluj-Napoca', 'Cluj Napoca',
-    'Timișoara', 'Timisoara', 'Iași', 'Iasi', 'Brașov', 'Brasov',
-    'Constanța', 'Constanta', 'Craiova', 'Bacău', 'Sibiu',
-    'Târgu Mureș', 'Targu Mures', 'Oradea', 'Baia Mare', 'Satu Mare',
-    'Ploiești', 'Ploiesti', 'Pitești', 'Pitesti', 'Arad', 'Galați', 'Galati',
-    'Brăila', 'Braila', 'Drobeta-Turnu Severin', 'Râmnicu Vâlcea', 'Ramnicu Valcea',
-    'Buzău', 'Buzau', 'Botoșani', 'Botosani', 'Zalău', 'Zalau', 'Hunedoara', 'Deva',
-    'Suceava', 'Bistrița', 'Bistrita', 'Tulcea', 'Călărași', 'Calarasi',
-    'Giurgiu', 'Alba Iulia', 'Slatina', 'Piatra Neamț', 'Piatra Neamt', 'Roman',
-    'Dumbrăvița', 'Dumbravita', 'Voluntari', 'Popești-Leordeni', 'Popesti-Leordeni',
-    'Chitila', 'Mogoșoaia', 'Mogosoaia', 'Otopeni'
-  ];
-
-  const citySet = new Set(romanianCities.map(c => c.toLowerCase()));
-
   const normalizeWorkmode = (wm) => {
     if (!wm) return undefined;
     const lower = wm.toLowerCase();
@@ -132,7 +181,7 @@ function transformJobsForSOLR(payload) {
       const validLocations = (job.location || []).filter(loc => {
         const lower = loc.toLowerCase().trim();
         if (lower === 'romania' || lower === 'românia') return true;
-        return citySet.has(lower);
+        return ROMANIAN_CITY_SET.has(lower);
       }).map(loc => loc.toLowerCase() === 'romania' ? 'România' : loc);
 
       return {

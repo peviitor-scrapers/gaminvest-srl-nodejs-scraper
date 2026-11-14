@@ -3,7 +3,7 @@
   "legalName": "GAMINVEST SRL",
   "brand": "GAMINVEST",
   "website": "https://www.gaminvest.ro",
-  "careerUrl": "https://www.gaminvest.ro/cariere.html",
+  "careerUrl": "https://gaminvest.ro/ro/cariere",
   "defaultLocation": "Oradea",
   "scraperFile": "https://raw.githubusercontent.com/peviitor-scrapers/gaminvest-srl-nodejs-scraper/main/.github/workflows/job-seeker-ro-spider.yml"
 }
